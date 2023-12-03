@@ -62,22 +62,20 @@ if [ ! -z "${DEPLOY_ADDITIONAL_FILES}" ]; then
 fi
 
 echo "  [+] Preparing SSH directory"
-mkdir -p ~/.ssh
-chmod 700 ~/.ssh
-rm -rf ~/.ssh/config
+mkdir -p $HOME/.ssh
+chmod 700 $HOME/.ssh
+rm -rf $HOME/.ssh/config
 
-SSH_OPTIONS=" -p $DEPLOY_SSH_PORT "
-SCP_OPTIONS=" -P $DEPLOY_SSH_PORT "
 # Creating cloudflared configuration
 if [ "${DEPLOY_SSH_USE_CLOUDFLARED}" == "true" ]; then
   echo "  [+] Configuring SSH to use cloudflared tunnel..."
-  SSH_OPTIONS=" -o ProxyCommand=cloudflared access ssh --hostname $DEPLOY_SSH_HOST "
-  SCP_OPTIONS=" -o ProxyCommand=cloudflared access ssh --hostname $DEPLOY_SSH_HOST "
+  echo "Host ${DEPLOY_SSH_HOST}
+  ProxyCommand /usr/local/bin/cloudflared access ssh --hostname %h" >> $HOME/.ssh/config
 fi
 
 if [ ! -z "${DEPLOY_SSH_FINGERPRINT}" ]; then
   echo "  [+] Will use provided ssh fingerprint..."
-  echo ${DEPLOY_SSH_FINGERPRINT} >> ~/.ssh/known_hosts
+  echo ${DEPLOY_SSH_FINGERPRINT} >> $HOME/.ssh/known_hosts
 else
   if [ "${DEPLOY_SSH_USE_CLOUDFLARED}" == "true" ]; then
       echo "  [!] When cloudflared is used the ssh fingerprint must be provided!"
@@ -85,20 +83,18 @@ else
   fi
 
   echo "  [+] Gathering ssh fingerprint..."
-  ssh-keyscan -p $DEPLOY_SSH_PORT $DEPLOY_SSH_HOST >> ~/.ssh/known_hosts
+  ssh-keyscan -p $DEPLOY_SSH_PORT $DEPLOY_SSH_HOST >> $HOME/.ssh/known_hosts
 fi
 
+SSH_IDENTITY_FILE=""
 if [ ! -z "${DEPLOY_SSH_KEY}" ]; then
   echo "  [+] Will use provided ssh key (Note: The value MUST be base64 encoded!)..."
-  (umask 077 ; echo ${DEPLOY_SSH_KEY} | base64 --decode > ~/.ssh/id_rsa_custom)
-  SSH_OPTIONS="$SSH_OPTIONS -i $HOME/.ssh/id_rsa_custom"
-  SCP_OPTIONS="$SCP_OPTIONS -i $HOME/.ssh/id_rsa_custom"
+  (umask 077 ; echo ${DEPLOY_SSH_KEY} | base64 --decode > $HOME/.ssh/id_rsa)
+  SSH_IDENTITY_FILE=" -i $HOME/.ssh/id_rsa "
 fi
 
 echo "  [+] Preparing deployment folder ($DEPLOY_SSH_USER) on $DEPLOY_SSH_HOST:$DEPLOY_SSH_PORT"
-SSH_OPTIONS="$SSH_OPTIONS -o ConnectTimeout=10 -o StrictHostKeyChecking=no"
-echo " Running SSH command with options: $SSH_OPTIONS"
-ssh $SSH_OPTIONS $DEPLOY_SSH_USER@$DEPLOY_SSH_HOST "
+ssh $SSH_IDENTITY_FILE $DEPLOY_SSH_USER@$DEPLOY_SSH_HOST -p $DEPLOY_SSH_PORT "
   mkdir -p $DEPLOY_DOCKER_DIR
   cd $DEPLOY_DOCKER_DIR
   rm -rf $DEPLOY_PROJECT_NAME
@@ -110,7 +106,7 @@ if ! [ "$?" -eq "0" ]; then
 fi
 
 echo "  [+] Copy archive to deployment folder"
-scp $SCP_OPTIONS "$DEPLOY_ARCHIVE_NAME" $DEPLOY_SSH_USER@$DEPLOY_SSH_HOST:"$DEPLOY_DOCKER_DIR/$DEPLOY_PROJECT_NAME"
+scp $SSH_IDENTITY_FILE -P $DEPLOY_SSH_PORT "$DEPLOY_ARCHIVE_NAME" $DEPLOY_SSH_USER@$DEPLOY_SSH_HOST:"$DEPLOY_DOCKER_DIR/$DEPLOY_PROJECT_NAME"
 if ! [ "$?" -eq "0" ]; then
 	echo "  [!] Failed to copy the archive"
 	exit 1
@@ -129,7 +125,7 @@ if [ ! -z "$DEPLOY_DOCKER_COMPOSE_OPTIONS" ]; then
 fi
 
 echo "  [+] Unpacking and pulling deployment"
-ssh $SSH_OPTIONS $DEPLOY_SSH_USER@$DEPLOY_SSH_HOST "
+ssh $SSH_IDENTITY_FILE $DEPLOY_SSH_USER@$DEPLOY_SSH_HOST -p $DEPLOY_SSH_PORT "
   cd $DEPLOY_DOCKER_DIR/$DEPLOY_PROJECT_NAME || exit 1
   unzip $DEPLOY_ARCHIVE_NAME || exit 1
   rm -rf $DEPLOY_ARCHIVE_NAME || exit 1
