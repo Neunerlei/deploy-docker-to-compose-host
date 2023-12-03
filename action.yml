@@ -8,7 +8,7 @@ inputs:
     description: 'The SSH user to connect to on the host'
     default: 'deployment'
   ssh-port:
-    description: 'The SSH port on the host to connect to',
+    description: 'The SSH port on the host to connect to'
     default: '22'
   ssh-fingerprint:
     description: 'The Fingerprint of the SSH server should you not be able to connect to the host'
@@ -24,7 +24,7 @@ inputs:
     description: 'The script to refresh the docker-login before deployment'
     default: '/opt/docker-login.sh'
   project-env:
-    description: 'Useful for staging and prod variants on the same host',
+    description: 'Useful for staging and prod variants on the same host'
     default: 'prod'
   project-name:
     description: 'The name of the project folder to create below the docker-dir'
