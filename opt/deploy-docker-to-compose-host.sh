@@ -96,7 +96,7 @@ if [ ! -z "${DEPLOY_SSH_KEY}" ]; then
 fi
 
 echo "  [+] Preparing deployment folder ($DEPLOY_SSH_USER) on $DEPLOY_SSH_HOST:$DEPLOY_SSH_PORT"
-ssh SSH_OPTIONS $DEPLOY_SSH_USER@$DEPLOY_SSH_HOST "
+ssh $SSH_OPTIONS $DEPLOY_SSH_USER@$DEPLOY_SSH_HOST "
   mkdir -p $DEPLOY_DOCKER_DIR
   cd $DEPLOY_DOCKER_DIR
   rm -rf $DEPLOY_PROJECT_NAME
