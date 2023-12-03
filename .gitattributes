@@ -1,0 +1,33 @@
+* text eol=lf
+
+.gitignore text
+.htaccess text
+
+*.php text
+*.css text
+*.js text
+*.htm text
+*.html text
+*.xml text
+*.txt text
+*.ini text
+*.inc text
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.mov binary
+*.mp4 binary
+*.mp3 binary
+*.gz binary
+*.zip binary
+*.7z binary
+*.webp binary
+
+*.pdf binary
+*.md text diff=markdown
+
+*.ttf binary
+*.woff binary

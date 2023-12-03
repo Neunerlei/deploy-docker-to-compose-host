@@ -1,0 +1,62 @@
+name: Deploy Docker to Compose Host
+description: Github action, designed to deploy built docker-images onto a prepared host server through SSH.
+inputs:
+  ssh-host:
+    description: 'The SSH host to deploy to.'
+    required: true
+  ssh-user:
+    description: 'The SSH user to connect to on the host'
+    default: 'deployment'
+  ssh-port:
+    description: 'The SSH port on the host to connect to',
+    default: '22'
+  ssh-fingerprint:
+    description: 'The Fingerprint of the SSH server should you not be able to connect to the host'
+  ssh-key:
+    description: 'The BASE64 encoded private key to use when connecting to the server'
+  ssh-use-cloudflared:
+    description: 'If set to true, the connection will be tunneled through cloudflared'
+    default: 'false'
+  docker-dir:
+    description: 'The directory on the host machine where to put the project folder'
+    default: '/02_docker'
+  login-script:
+    description: 'The script to refresh the docker-login before deployment'
+    default: '/opt/docker-login.sh'
+  project-env:
+    description: 'Useful for staging and prod variants on the same host',
+    default: 'prod'
+  project-name:
+    description: 'The name of the project folder to create below the docker-dir'
+    default: '${GITHUB_REPOSITORY}/${project-env}'
+  additional-files:
+    description: 'A comma separated list of files that should be transferred to the host server'
+  after-script:
+    description: 'A shell script to execute on the host machine after the deployment took place'
+  archive-name:
+    description: 'Name of the transfer archive'
+    default: '${GITHUB_SHA}.${GITHUB_RUN_ID}.zip'
+  server-env-file:
+    description: '(The absolute path to an .env file on the server which will be appended to the generated .env file'
+  docker-compose-options:
+    description: 'Additional docker-compose arguments to use when booting the container'
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  env:
+    DEPLOY_SSH_HOST: ${{ inputs.ssh-host }}
+    DEPLOY_DOCKER_DIR: ${{ inputs.docker-dir }}
+    DEPLOY_DOCKER_LOGIN_SCRIPT: ${{ inputs.login-script }}
+    DEPLOY_PROJECT_ENV: ${{ inputs.project-env }}
+    DEPLOY_PROJECT_NAME: ${{ inputs.project-name }}
+    DEPLOY_SSH_USER: ${{ inputs.ssh-user }}
+    DEPLOY_SSH_PORT: ${{ inputs.ssh-port }}
+    DEPLOY_SSH_FINGERPRINT: ${{ inputs.ssh-fingerprint }}
+    DEPLOY_SSH_KEY: ${{ inputs.ssh-key }}
+    DEPLOY_SSH_USE_CLOUDFLARED: ${{ inputs.ssh-use-cloudflared }}
+    DEPLOY_ADDITIONAL_FILES: ${{ inputs.additional-files }}
+    DEPLOY_AFTER_SCRIPT: ${{ inputs.after-script }}
+    DEPLOY_ARCHIVE_NAME: ${{ inputs.archive-name }}
+    DEPLOY_SERVER_ENV_FILE: ${{ inputs.server-env-file }}
+    DEPLOY_DOCKER_COMPOSE_OPTIONS: ${{ inputs.docker-compose-options }}

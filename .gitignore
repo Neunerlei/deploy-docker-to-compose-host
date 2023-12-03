@@ -1,0 +1,31 @@
+# TODO:
+# gitignore and dockerignore normally should look identical
+
+.settings/
+.DS_Store
+.env
+.env.app
+perms.set
+.unison*
+
+# TODO:
+# Be sure to place all directories here, which are downloaded through composer, contain temporary data, uploaded user data, or any other stuff which does not belong to the source code itself.
+# In other words the repo should be completely stateless.
+# Exceptions are lock-files like composer.lock or yarn.lock, which provide a state but are essentially for deployment
+#
+# src/tmp
+# src/logs
+# src/diskfiles
+src/vendor
+# src/node_modules
+
+# IDEA Code Style
+.idea/*
+!.idea/copyright/
+!.idea/copyright/*
+!.idea/codeStyles/
+!.idea/codeStyles/*
+
+# Vendor dev directory
+src/vendor-dev/*
+!src/vendor-dev/.keep
