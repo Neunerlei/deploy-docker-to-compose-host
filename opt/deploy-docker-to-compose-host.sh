@@ -64,8 +64,6 @@ fi
 echo "  [+] Preparing SSH directory"
 mkdir -p ~/.ssh
 chmod 700 ~/.ssh
-touch ~/.ssh/id_rsa
-chmod 600 ~/.ssh/id_rsa
 rm -rf ~/.ssh/config
 
 # Creating cloudflared configuration
@@ -93,13 +91,10 @@ fi
 SSH_IDENTITY_FILE=""
 if [ ! -z "${DEPLOY_SSH_KEY}" ]; then
   echo "  [+] Will use provided ssh key (Note: The value MUST be base64 encoded!)..."
-  (umask 077 ; echo ${DEPLOY_SSH_KEY} | base64 --decode > ~/.ssh/id_rsa)
-  SSH_IDENTITY_FILE=" -i ~/.ssh/id_rsa "
+  (umask 077 ; echo ${DEPLOY_SSH_KEY} | base64 --decode > ~/.ssh/id_rsa_custom)
+  SSH_IDENTITY_FILE=" -i $HOME/.ssh/id_rsa_custom "
 fi
 
-echo "  [?] Testing directory structure"
-ls -la ~/
-ls -la ~/.ssh
 echo "  [+] Preparing deployment folder ($DEPLOY_SSH_USER) on $DEPLOY_SSH_HOST:$DEPLOY_SSH_PORT"
 ssh $SSH_IDENTITY_FILE $DEPLOY_SSH_USER@$DEPLOY_SSH_HOST -p $DEPLOY_SSH_PORT "
   mkdir -p $DEPLOY_DOCKER_DIR
