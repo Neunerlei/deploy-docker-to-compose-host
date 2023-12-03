@@ -91,11 +91,12 @@ fi
 if [ ! -z "${DEPLOY_SSH_KEY}" ]; then
   echo "  [+] Will use provided ssh key (Note: The value MUST be base64 encoded!)..."
   (umask 077 ; echo ${DEPLOY_SSH_KEY} | base64 --decode > ~/.ssh/id_rsa_custom)
-  SSH_OPTIONS = "$SSH_OPTIONS -i $HOME/.ssh/id_rsa_custom"
-  SCP_OPTIONS = "$SCP_OPTIONS -i $HOME/.ssh/id_rsa_custom"
+  SSH_OPTIONS="$SSH_OPTIONS -i $HOME/.ssh/id_rsa_custom"
+  SCP_OPTIONS="$SCP_OPTIONS -i $HOME/.ssh/id_rsa_custom"
 fi
 
 echo "  [+] Preparing deployment folder ($DEPLOY_SSH_USER) on $DEPLOY_SSH_HOST:$DEPLOY_SSH_PORT"
+echo " Running SSH command with options: $SSH_OPTIONS"
 ssh $SSH_OPTIONS $DEPLOY_SSH_USER@$DEPLOY_SSH_HOST "
   mkdir -p $DEPLOY_DOCKER_DIR
   cd $DEPLOY_DOCKER_DIR
