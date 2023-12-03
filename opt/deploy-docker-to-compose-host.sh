@@ -71,8 +71,8 @@ SCP_OPTIONS=" -P $DEPLOY_SSH_PORT "
 # Creating cloudflared configuration
 if [ "${DEPLOY_SSH_USE_CLOUDFLARED}" == "true" ]; then
   echo "  [+] Configuring SSH to use cloudflared tunnel..."
-  SSH_OPTIONS=" -o ProxyCommand=\"cloudflared access ssh --hostname $DEPLOY_SSH_HOST\" "
-  SCP_OPTIONS=" -o ProxyCommand=\"cloudflared access ssh --hostname $DEPLOY_SSH_HOST\" "
+  SSH_OPTIONS=" -o ProxyCommand=cloudflared access ssh --hostname $DEPLOY_SSH_HOST "
+  SCP_OPTIONS=" -o ProxyCommand=cloudflared access ssh --hostname $DEPLOY_SSH_HOST "
 fi
 
 if [ ! -z "${DEPLOY_SSH_FINGERPRINT}" ]; then
