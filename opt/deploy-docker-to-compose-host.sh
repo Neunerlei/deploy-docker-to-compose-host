@@ -97,6 +97,9 @@ if [ ! -z "${DEPLOY_SSH_KEY}" ]; then
   SSH_IDENTITY_FILE=" -i ~/.ssh/id_rsa "
 fi
 
+echo "  [?] Testing directory structure"
+ls -la ~/
+ls -la ~/.ssh
 echo "  [+] Preparing deployment folder ($DEPLOY_SSH_USER) on $DEPLOY_SSH_HOST:$DEPLOY_SSH_PORT"
 ssh $SSH_IDENTITY_FILE $DEPLOY_SSH_USER@$DEPLOY_SSH_HOST -p $DEPLOY_SSH_PORT "
   mkdir -p $DEPLOY_DOCKER_DIR
