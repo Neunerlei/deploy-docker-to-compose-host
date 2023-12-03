@@ -15,10 +15,10 @@ RUN mkdir -p --mode=0755 /usr/share/keyrings \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
 
-COPY deploy-docker-to-compose-host.sh /opt/deploy-docker-to-compose-host.sh
+COPY /opt/deploy-docker-to-compose-host.sh /opt/deploy-docker-to-compose-host.sh
 RUN chmod +x /opt/deploy-docker-to-compose-host.sh
 
-COPY makeProdEnv.sh /opt/makeProdEnv.sh
+COPY /opt/makeProdEnv.sh /opt/makeProdEnv.sh
 RUN chmod +x /opt/makeProdEnv.sh
 
 ENTRYPOINT ["/opt/deploy-docker-to-compose-host.sh"]
