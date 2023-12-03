@@ -22,4 +22,8 @@ RUN chmod +x /opt/deploy-docker-to-compose-host.sh
 COPY /opt/makeProdEnv.sh /opt/makeProdEnv.sh
 RUN chmod +x /opt/makeProdEnv.sh
 
+RUN mkdir -p /work \
+    chmod 777 /work
+
+WORKDIR /work
 ENTRYPOINT ["/opt/deploy-docker-to-compose-host.sh"]
