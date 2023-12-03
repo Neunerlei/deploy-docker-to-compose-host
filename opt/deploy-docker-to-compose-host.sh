@@ -61,25 +61,28 @@ if [ ! -z "${DEPLOY_ADDITIONAL_FILES}" ]; then
   done
 fi
 
+echo "  [+] Preparing SSH directory"
+mkdir -p ~/.ssh
+chmod 700 ~/.ssh
+touch ~/.ssh/id_rsa
+chmod 600 ~/.ssh/id_rsa
+rm -rf ~/.ssh/config
+
 # Creating cloudflared configuration
 if [ "${DEPLOY_SSH_USE_CLOUDFLARED}" == "true" ]; then
   echo "  [+] Configuring SSH to use cloudflared tunnel..."
-  mkdir -p ~/.ssh
-  rm -rf ~/.ssh/config
   echo "Host ${DEPLOY_SSH_HOST}
   ProxyCommand /usr/local/bin/cloudflared access ssh --hostname %h" >> ~/.ssh/config
 fi
 
 if [ ! -z "${DEPLOY_SSH_FINGERPRINT}" ]; then
   echo "  [+] Will use provided ssh fingerprint..."
-  mkdir -p ~/.ssh
   echo ${DEPLOY_SSH_FINGERPRINT} >> ~/.ssh/known_hosts
 fi
 
 SSH_IDENTITY_FILE=""
 if [ ! -z "${DEPLOY_SSH_KEY}" ]; then
   echo "  [+] Will use provided ssh key (Note: The value MUST be base64 encoded!)..."
-  mkdir -p ~/.ssh
   (umask 077 ; echo ${DEPLOY_SSH_KEY} | base64 --decode > ~/.ssh/id_rsa)
   SSH_IDENTITY_FILE=" -i ~/.ssh/id_rsa "
 fi
