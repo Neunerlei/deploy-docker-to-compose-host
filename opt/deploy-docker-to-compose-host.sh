@@ -63,6 +63,8 @@ fi
 
 mkdir -p $HOME/.ssh
 chmod 700 $HOME/.ssh
+mkdir -p ~/.ssh
+chmod 700 ~/.ssh
 
 SSH_OPTIONS=(-o "ConnectTimeout=10")
 SCP_OPTIONS=(-o "ConnectTimeout=10")
@@ -80,6 +82,7 @@ fi
 if [ ! -z "${DEPLOY_SSH_FINGERPRINT}" ]; then
   echo "  [+] Will use provided ssh fingerprint..."
   echo ${DEPLOY_SSH_FINGERPRINT} >> $HOME/.ssh/known_hosts
+  echo ${DEPLOY_SSH_FINGERPRINT} >> ~/.ssh/known_hosts
 else
   if [ "${DEPLOY_SSH_USE_CLOUDFLARED}" == "true" ]; then
       echo "  [!] When cloudflared is used the ssh fingerprint must be provided!"
@@ -88,6 +91,7 @@ else
 
   echo "  [+] Gathering ssh fingerprint..."
   ssh-keyscan -p $DEPLOY_SSH_PORT $DEPLOY_SSH_HOST >> $HOME/.ssh/known_hosts
+  ssh-keyscan -p $DEPLOY_SSH_PORT $DEPLOY_SSH_HOST >> ~/.ssh/known_hosts
 fi
 
 if [ ! -z "${DEPLOY_SSH_KEY}" ]; then
