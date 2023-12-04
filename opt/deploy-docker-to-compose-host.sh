@@ -84,14 +84,11 @@ if [ ! -z "${DEPLOY_SSH_FINGERPRINT}" ]; then
   echo ${DEPLOY_SSH_FINGERPRINT} >> $HOME/.ssh/known_hosts
   echo ${DEPLOY_SSH_FINGERPRINT} >> ~/.ssh/known_hosts
 else
-  if [ "${DEPLOY_SSH_USE_CLOUDFLARED}" == "true" ]; then
-      echo "  [!] When cloudflared is used the ssh fingerprint must be provided!"
-      exit 1
+  if [ "${DEPLOY_SSH_USE_CLOUDFLARED}" != "true" ]; then
+    echo "  [+] Gathering ssh fingerprint..."
+    ssh-keyscan -p $DEPLOY_SSH_PORT $DEPLOY_SSH_HOST >> $HOME/.ssh/known_hosts
+    ssh-keyscan -p $DEPLOY_SSH_PORT $DEPLOY_SSH_HOST >> ~/.ssh/known_hosts
   fi
-
-  echo "  [+] Gathering ssh fingerprint..."
-  ssh-keyscan -p $DEPLOY_SSH_PORT $DEPLOY_SSH_HOST >> $HOME/.ssh/known_hosts
-  ssh-keyscan -p $DEPLOY_SSH_PORT $DEPLOY_SSH_HOST >> ~/.ssh/known_hosts
 fi
 
 if [ ! -z "${DEPLOY_SSH_KEY}" ]; then
