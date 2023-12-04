@@ -72,8 +72,8 @@ SCP_OPTIONS=(-o "ConnectTimeout=10")
 # Creating cloudflared configuration
 if [ "${DEPLOY_SSH_USE_CLOUDFLARED}" == "true" ]; then
   echo "  [+] Configuring SSH to use cloudflared tunnel..."
-  SSH_OPTIONS+=( -o "ProxyCommand=cloudflared access ssh --hostname $DEPLOY_SSH_HOST" -o "StrictHostKeyChecking=no" -o "UserKnownHostsFile=/dev/null" )
-  SCP_OPTIONS+=( -o "ProxyCommand=cloudflared access ssh --hostname $DEPLOY_SSH_HOST" -o "StrictHostKeyChecking=no" -o "UserKnownHostsFile=/dev/null" )
+  SSH_OPTIONS+=( -o "ProxyCommand=cloudflared access ssh --hostname $DEPLOY_SSH_HOST" -o "StrictHostKeyChecking=no" )
+  SCP_OPTIONS+=( -o "ProxyCommand=cloudflared access ssh --hostname $DEPLOY_SSH_HOST" -o "StrictHostKeyChecking=no" )
 else
   SSH_OPTIONS+=(-p "$DEPLOY_SSH_PORT")
   SSH_OPTIONS+=(-P "$DEPLOY_SSH_PORT")
