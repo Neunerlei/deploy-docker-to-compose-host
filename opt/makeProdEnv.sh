@@ -6,19 +6,22 @@ if [ -z "$1" ];  then
 fi
 
 projectEnv=$1
-emptyLineReg="^\s+$"
+commentReg="^#"
+emptyLineReg="^\s*$"
 emptyValueReg=".*?=($|\s*$)"
 
 # Read the .env file
 out=""
 if [ -e .env ]; then
-  for LINE in `cat .env`; do
+  while IFS= read -r LINE
+  do
+    if [[ $LINE =~ $commentReg ]]; then continue; fi
     if [[ $LINE =~ $emptyLineReg ]]; then continue; fi
     if [[ $LINE =~ $emptyValueReg ]]; then continue; fi
 
     out+="$LINE
 "
-  done
+  done < .env
   echo "  [+] .env contents added"
 else
   echo "  [?] No .env found, skip..."
@@ -26,13 +29,15 @@ fi
 
 # Read .env.prod file
 if [ -e ".env.$projectEnv" ]; then
-	for LINE in `cat .env.$projectEnv`; do
+  while IFS= read -r LINE
+  do
+    if [[ $LINE =~ $commentReg ]]; then continue; fi
     if [[ $LINE =~ $emptyLineReg ]]; then continue; fi
     if [[ $LINE =~ $emptyValueReg ]]; then continue; fi
 
     out+="$LINE
 "
-	done
+  done < ".env.$projectEnv"
   echo "  [+] .env.$projectEnv contents added"
 else
   echo "  [?] No .env.$projectEnv found, skip..."
