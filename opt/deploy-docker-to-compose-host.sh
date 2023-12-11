@@ -133,7 +133,7 @@ fi
 echo "  [+] Unpacking and pulling deployment"
 ssh "${SSH_OPTIONS[@]}" $DEPLOY_SSH_USER@$DEPLOY_SSH_HOST "
   cd $DEPLOY_DOCKER_DIR/$DEPLOY_PROJECT_NAME || exit 1
-  unzip $DEPLOY_ARCHIVE_NAME || exit 1
+  unzip -o $DEPLOY_ARCHIVE_NAME || exit 1
   rm -rf $DEPLOY_ARCHIVE_NAME || exit 1
   ${DYN_SCRIPT}
   (test -x $DEPLOY_DOCKER_LOGIN_SCRIPT && $DEPLOY_DOCKER_LOGIN_SCRIPT)
