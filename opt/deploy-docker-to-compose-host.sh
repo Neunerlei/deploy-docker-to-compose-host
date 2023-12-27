@@ -19,7 +19,6 @@ DEPLOY_SSH_PORT=${DEPLOY_SSH_PORT:-"22"}
 DEPLOY_SSH_FINGERPRINT=${DEPLOY_SSH_FINGERPRINT:-""}
 DEPLOY_SSH_KEY=${DEPLOY_SSH_KEY:-""}
 DEPLOY_ADDITIONAL_FILES=${DEPLOY_ADDITIONAL_FILES:-""}
-DEPLOY_AFTER_SCRIPT=${DEPLOY_AFTER_SCRIPT:-"echo ''"}
 DEPLOY_ARCHIVE_NAME=${DEPLOY_ARCHIVE_NAME:-"${GITHUB_SHA}.${GITHUB_RUN_ID}.zip"}
 DEPLOY_SERVER_ENV_FILE=${DEPLOY_SERVER_ENV_FILE:-""}
 DEPLOY_DOCKER_COMPOSE_OPTIONS=${DEPLOY_DOCKER_COMPOSE_OPTIONS:-""}
@@ -98,11 +97,23 @@ if [ ! -z "${DEPLOY_SSH_KEY}" ]; then
   SCP_OPTIONS+=( -i "$HOME/.ssh/id_rsa_custom" )
 fi
 
+SCRIPT_BEFORE="echo ''"
+
+if [ ! -z "${DEPLOY_BEFORE_SCRIPT}" ]; then
+  echo "  [+] Will run custom script before deployment..."
+  SCRIPT_BEFORE="
+  ${DEPLOY_BEFORE_SCRIPT}" || exit 1
+fi
+
 echo "  [+] Preparing deployment folder ($DEPLOY_SSH_USER) on $DEPLOY_SSH_HOST:$DEPLOY_SSH_PORT"
-echo "OPTIONS ${SSH_OPTIONS[@]}"
 ssh "${SSH_OPTIONS[@]}" $DEPLOY_SSH_USER@$DEPLOY_SSH_HOST "
   mkdir -p $DEPLOY_DOCKER_DIR
   cd $DEPLOY_DOCKER_DIR
+  if [ -d $DEPLOY_PROJECT_NAME ]; then
+    cd $DEPLOY_PROJECT_NAME
+    ${SCRIPT_BEFORE}
+    cd ..
+  fi
   rm -rf $DEPLOY_PROJECT_NAME
   mkdir -p $DEPLOY_PROJECT_NAME
 "
@@ -118,11 +129,40 @@ if ! [ "$?" -eq "0" ]; then
 	exit 1
 fi
 
-DYN_SCRIPT="echo ''"
+SCRIPT_BEFORE_LOGIN="echo ''"
+SCRIPT_BEFORE_PULL="echo ''"
+SCRIPT_AFTER_PULL="echo ''"
+SCRIPT_AFTER_UP="echo ''"
+
 if [ ! -z "$DEPLOY_SERVER_ENV_FILE" ]; then
   echo "  [+] Will attach contents of $DEPLOY_SERVER_ENV_FILE to $DEPLOY_DOCKER_DIR/$DEPLOY_PROJECT_NAME/.env..."
-  DYN_SCRIPT="
+  SCRIPT_BEFORE_LOGIN="
 cat $DEPLOY_SERVER_ENV_FILE >> $DEPLOY_DOCKER_DIR/$DEPLOY_PROJECT_NAME/.env" || exit 1
+fi
+
+if [ ! -z "${DEPLOY_BEFORE_LOGIN_SCRIPT}" ]; then
+  echo "  [+] Will run custom script before login..."
+  SCRIPT_BEFORE_LOGIN="
+  $SCRIPT_BEFORE_LOGIN
+  ${DEPLOY_BEFORE_LOGIN_SCRIPT}" || exit 1
+fi
+
+if [ ! -z "${DEPLOY_BEFORE_PULL_SCRIPT}" ]; then
+  echo "  [+] Will run custom script before pull..."
+  SCRIPT_BEFORE_PULL="
+  ${DEPLOY_BEFORE_PULL_SCRIPT}" || exit 1
+fi
+
+if [ ! -z "${DEPLOY_AFTER_PULL_SCRIPT}" ]; then
+  echo "  [+] Will run custom script after pull..."
+  SCRIPT_AFTER_PULL="
+  ${DEPLOY_AFTER_PULL_SCRIPT}" || exit 1
+fi
+
+if [ ! -z "${DEPLOY_AFTER_SCRIPT}" ]; then
+  echo "  [+] Will run custom script after up..."
+  SCRIPT_AFTER_UP="
+  ${DEPLOY_AFTER_SCRIPT}" || exit 1
 fi
 
 if [ ! -z "$DEPLOY_DOCKER_COMPOSE_OPTIONS" ]; then
@@ -135,11 +175,13 @@ ssh "${SSH_OPTIONS[@]}" $DEPLOY_SSH_USER@$DEPLOY_SSH_HOST "
   cd $DEPLOY_DOCKER_DIR/$DEPLOY_PROJECT_NAME || exit 1
   unzip -o $DEPLOY_ARCHIVE_NAME || exit 1
   rm -rf $DEPLOY_ARCHIVE_NAME || exit 1
-  ${DYN_SCRIPT}
+  ${SCRIPT_BEFORE_LOGIN}
   (test -x $DEPLOY_DOCKER_LOGIN_SCRIPT && $DEPLOY_DOCKER_LOGIN_SCRIPT)
+  ${SCRIPT_BEFORE_PULL}
   docker-compose${DEPLOY_DOCKER_COMPOSE_OPTIONS} pull || exit 1
+  ${SCRIPT_AFTER_PULL}
   docker-compose${DEPLOY_DOCKER_COMPOSE_OPTIONS} up -d || exit 1
-  $DEPLOY_AFTER_SCRIPT
+  ${SCRIPT_AFTER_UP}
 "
 ECD=$?
 if ! [ "$ECD" -eq "0" ]; then
